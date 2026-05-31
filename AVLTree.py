@@ -1,9 +1,9 @@
 # id1: 326528494
 # name1: Erez Avrahami
 # username1: erezavrahami
-# id2:
-# name2:
-# username2:
+# id2: 326283264
+# name2: Omer Lemel
+# username2: lemel
 
 
 """A class representing a node in an AVL tree"""
