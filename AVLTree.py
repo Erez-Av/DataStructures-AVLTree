@@ -5,6 +5,7 @@
 # name2: Omer Lemel
 # username2: lemel
 
+import time
 
 """A class representing a node in an AVL tree"""
 
@@ -24,7 +25,10 @@ class AVLNode(object):
         self.left = None
         self.right = None
         self.parent = None
+        self.successor = None
+        self.predecessor = None
         self.height = -1
+        self.bf = 0
 
     """returns whether self is not a virtual node 
 
@@ -33,7 +37,7 @@ class AVLNode(object):
     """
 
     def is_real_node(self):
-        return False
+        return self.height != -1
 
 
 """
@@ -51,6 +55,9 @@ class AVLTree(object):
 
     def __init__(self, is_avl):
         self.root = None
+        self.is_avl = is_avl
+        self.tsize = 0
+        self.virtual_node = AVLNode(None, None)
 
     """searches for a node in the dictionary corresponding to the key (starting at the root)
 
@@ -62,7 +69,13 @@ class AVLTree(object):
     """
 
     def search(self, key):
-        return None, -1
+        t0 = time.time()
+        node = self.root
+        while node.is_real_node():
+            if node.key == key: return node, time.time() - t0
+            elif key < node.key: node = node.left
+            else: node = node.right
+        return None, time.time() - t0
 
     """inserts a new node into the dictionary with corresponding key and value (starting at the root)
 
@@ -77,6 +90,43 @@ class AVLTree(object):
     """
 
     def insert(self, key, val):
+        if self.root == None:
+            self.tsize += 1
+            t0 = time.time()
+            self.root = AVLNode(key, val)
+            self.root.height = 0
+            self.root.successor = self.virtual_node
+            self.root.predecessor = self.virtual_node
+            self.update_virtual_sons(self.root)
+            return self.root,time.time()-t0,-1,-1
+        
+        if self.search(key)[0] == None:
+            self.tsize += 1
+            t0 = time.time()
+            leftNode = True
+            parent = None
+            node = self.root
+            while node.is_real_node():
+                parent = node
+                parent.height += 1
+                if key > node.key: node = node.right  
+                else: node = node.left
+            
+            if key < parent.key:
+                parent.left = AVLNode(key, val)
+                parent.left.parent = parent
+            else:
+                parent.right = AVLNode(key, val)
+                parent.right.parent = parent
+                leftNode = False
+
+            resNode = parent.left if leftNode else parent.right
+            resNode.height += 1
+            self.update_virtual_sons(resNode)
+            self.update_bf(resNode)
+            self.update_relations(resNode, "insertion")
+            self.rolls(resNode, "insertion")
+            return resNode, time.time()-t0, -1, -1
         return None, -1, -1, -1
 
     """deletes node from the dictionary
@@ -95,7 +145,14 @@ class AVLTree(object):
     """
 
     def avl_to_list(self):
-        return None
+        def rec_avl_to_list(node, ls):
+            if not node.is_real_node():
+                return []
+            rec_avl_to_list(node.left, ls)
+            ls.append((node.key, node.value))
+            rec_avl_to_list(node.right, ls)
+            return ls
+        return rec_avl_to_list(self.root, [])
 
     """returns the number of items in dictionary 
 
@@ -104,7 +161,7 @@ class AVLTree(object):
     """
 
     def size(self):
-        return -1
+        return self.tsize
 
     """returns the root of the tree representing the dictionary
 
@@ -113,7 +170,7 @@ class AVLTree(object):
     """
 
     def get_root(self):
-        return None
+        return self.root
 
     """returns the height of the tree
 
@@ -122,4 +179,124 @@ class AVLTree(object):
         """
 
     def get_height(self):
-        return -1
+        return self.root.height
+
+    
+    """returns the successor of a node
+
+    @pre: node in AVLTree
+    @rtype: AVLnode
+    """
+    def find_succ(self, node):
+        successor = node
+        if node.right.is_real_node():
+            successor = successor.right
+            while successor.left.is_real_node():
+                successor = successor.left
+            return successor
+        
+        else:
+            parent = successor.parent
+            while parent != None:
+                if successor.key < parent.key:
+                    successor = parent
+                    break
+                else:
+                    successor = parent
+                    parent = successor.parent
+            return successor if parent != None else self.virtual_node
+    
+    """returns the predecessor of a node
+
+    @pre: node in AVLTree
+    @rtype: AVLnode
+    """
+    def find_pred(self, node):
+        predecessor = node
+        if node.left.is_real_node():
+            predecessor = predecessor.left
+            while predecessor.right.is_real_node():
+                predecessor = predecessor.right
+            return predecessor
+        
+        else:
+            parent = predecessor.parent
+            while parent != None:
+                if predecessor.key > parent.key:
+                    predecessor = parent
+                    break
+                else:
+                    predecessor = parent
+                    parent = predecessor.parent
+            return predecessor if parent != None else self.virtual_node
+    
+    
+    def update_relations(self, node, op):
+        if self.tsize <= 1:
+            pass
+        
+        elif op == "insertion":
+            succ = self.find_succ(node)
+            pred = self.find_pred(node)  
+            node.successor = succ
+            node.predecessor = pred
+            if succ.is_real_node(): succ.predecessor = node
+            if pred.is_real_node(): pred.successor = node
+        
+        elif op == "deletion":
+            if node.self.virtual_node: node.successor.predecessor = node.predecessor
+            if node.self.virtual_node: node.predecessor.successor = node.successor
+
+    
+    def rolls(self, node, op):
+        if op == "insertion":
+            if node.bf == 2:
+                pass
+
+    def update_bf(self, node):
+        while node != None:
+            node.bf = node.left.height - node.right.height
+            node = node.parent
+    
+    def update_virtual_sons(self, node):
+        node.left = self.virtual_node
+        node.right = self.virtual_node
+
+    def __repr__(self): 
+        print("the format of a node is x,y,z where x:key, y:height, z:bf") #added explantion of printed values
+        def printree(root):
+            if not root.is_real_node():
+                return ["#"]
+
+            node_info = str(root.key)+","+str(root.height)+","+str(root.bf) # edited
+            left, right = printree(root.left), printree(root.right)
+
+            lwid = len(left[-1])
+            rwid = len(right[-1])
+            nodewid = len(node_info) # edited
+
+            result = [(lwid + 1) * " " + node_info + (rwid + 1) * " "] # edited
+
+            ls = len(left[0].rstrip())
+            rs = len(right[0]) - len(right[0].lstrip())
+            result.append(ls * " " + (lwid - ls) * "_" + "/" + nodewid * " " + "\\" + rs * "_" + (rwid - rs) * " ") # edited
+
+            for i in range(max(len(left), len(right))):
+                row = ""
+                if i < len(left):
+                    row += left[i]
+                else:
+                    row += lwid * " "
+                    
+                row += (nodewid + 2) * " "  # edited
+
+                if i < len(right):
+                    row += right[i]
+                else:
+                    row += rwid * " "
+
+                result.append(row)
+
+            return result
+
+        return '\n'.join(printree(self.root))
