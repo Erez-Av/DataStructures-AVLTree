@@ -69,13 +69,19 @@ class AVLTree(object):
     """
 
     def search(self, key):
-        t0 = time.time()
+        if self.root == None: # Empty tree -> search_time = 1
+            return None, 1
+        search_time = 0 # Initialize seach_time
         node = self.root
         while node.is_real_node():
-            if node.key == key: return node, time.time() - t0
-            elif key < node.key: node = node.left
-            else: node = node.right
-        return None, time.time() - t0
+            if node.key == key: return node, search_time + 1
+            elif key < node.key: # Add 1 to search_time for every node we visited
+                node = node.left
+                search_time += 1
+            else: 
+                node = node.right
+                search_time += 1
+        return None, search_time + 1 # If the search failed, search_time += 2. We already added 1 for the empty node we visited, so we're adding 1 and not 2
 
     """inserts a new node into the dictionary with corresponding key and value (starting at the root)
 
@@ -146,11 +152,11 @@ class AVLTree(object):
 
     def avl_to_list(self):
         def rec_avl_to_list(node, ls):
-            if not node.is_real_node():
+            if not node.is_real_node(): # Goes to the end of the left tree
                 return []
             rec_avl_to_list(node.left, ls)
-            ls.append((node.key, node.value))
-            rec_avl_to_list(node.right, ls)
+            ls.append((node.key, node.value)) # Adds the node into the list
+            rec_avl_to_list(node.right, ls) # Continues to the right tree
             return ls
         return rec_avl_to_list(self.root, [])
 
@@ -179,7 +185,7 @@ class AVLTree(object):
         """
 
     def get_height(self):
-        return self.root.height
+        return self.root.height if self.root != None else -1 # If the tree is empty, the function will return -1
 
     
     """returns the successor of a node
