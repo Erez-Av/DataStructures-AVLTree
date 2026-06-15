@@ -6,6 +6,7 @@
 # username2: lemel
 
 import time
+import math
 
 """A class representing a node in an AVL tree"""
 
@@ -103,6 +104,7 @@ class AVLTree(object):
             self.root.height = 0
             self.root.successor = self.virtual_node
             self.root.predecessor = self.virtual_node
+            self.root.parent = self.virtual_node
             self.update_virtual_sons(self.root)
             return self.root,time.time()-t0,-1,-1
         
@@ -131,7 +133,13 @@ class AVLTree(object):
             self.update_virtual_sons(resNode)
             self.update_bf(resNode)
             self.update_relations(resNode, "insertion")
-            self.rolls(resNode, "insertion")
+            
+            node = resNode
+            made_rolls = False
+            while node.is_real_node() and not made_rolls:
+                made_rolls = self.rolls(node, "insertion")
+                node = node.parent
+            
             return resNode, time.time()-t0, -1, -1
         return None, -1, -1, -1
 
@@ -142,7 +150,32 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        return
+        parent = node.parent
+        if self.num_children(node) < 2:
+            child = self.get_childeren(node)[0] #if len(self.get_childeren(node)) != 0 else self.virtual_node
+            self.update_relations(node, "deletion")
+            if parent is self.virtual_node: self.root = child
+            elif node.key < parent.key: parent.left = child
+            else: parent.right = child
+        else:
+            succ = node.successor
+            succ_parent = succ.parent
+            succ_child = self.get_childeren(succ)[0] #if len(self.get_childeren(node)) != 0 else self.virtual_node ##
+            self.update_relations(node, "deletion")
+            
+            print(succ.key,succ_parent.key,succ_child.key)
+            succ_parent.left = succ_child
+            succ_child.parent = succ_parent
+            succ.left = node.left
+            succ.right = node.right
+            succ.parent = parent
+            if parent is self.virtual_node: self.root = succ
+            elif node.key < parent.key: parent.left = succ
+            else: parent.right = succ
+
+
+
+            
 
     """returns a list representing dictionary 
 
@@ -187,6 +220,30 @@ class AVLTree(object):
     def get_height(self):
         return self.root.height if self.root != None else -1 # If the tree is empty, the function will return -1
 
+    def update_height(self, node):
+        while node.is_real_node():
+            node.height = max(node.left.height, node.right.height) + 1
+            node = node.parent
+    
+    def update_bf(self, node):
+        while node.is_real_node():
+            node.bf = node.left.height - node.right.height
+            node = node.parent
+    
+    def update_virtual_sons(self, node):
+        node.left = self.virtual_node
+        node.right = self.virtual_node
+    
+
+    def get_childeren(self, node):
+        ls = []
+        if node.left.is_real_node(): ls.append(node.left)
+        if node.right.is_real_node(): ls.append(node.right)
+        if len(ls) == 0: ls.append(self.virtual_node)
+        return ls
+    
+    def num_children(self, node):
+        return len(self.get_childeren(node))
     
     """returns the successor of a node
 
@@ -203,14 +260,14 @@ class AVLTree(object):
         
         else:
             parent = successor.parent
-            while parent != None:
+            while parent.is_real_node():
                 if successor.key < parent.key:
                     successor = parent
                     break
                 else:
                     successor = parent
                     parent = successor.parent
-            return successor if parent != None else self.virtual_node
+            return successor if parent.is_real_node() else self.virtual_node
     
     """returns the predecessor of a node
 
@@ -227,14 +284,14 @@ class AVLTree(object):
         
         else:
             parent = predecessor.parent
-            while parent != None:
+            while parent.is_real_node():
                 if predecessor.key > parent.key:
                     predecessor = parent
                     break
                 else:
                     predecessor = parent
                     parent = predecessor.parent
-            return predecessor if parent != None else self.virtual_node
+            return predecessor if parent.is_real_node() else self.virtual_node
     
     
     def update_relations(self, node, op):
@@ -250,23 +307,90 @@ class AVLTree(object):
             if pred.is_real_node(): pred.successor = node
         
         elif op == "deletion":
-            if node.self.virtual_node: node.successor.predecessor = node.predecessor
-            if node.self.virtual_node: node.predecessor.successor = node.successor
+            if node.successor.is_real_node(): node.successor.predecessor = node.predecessor
+            if node.predecessor.is_real_node(): node.predecessor.successor = node.successor
 
     
+    def one_roll(self, node): # the "easy" roll where its big->mid->small or opposite
+        parent = node.parent
+        if node.bf == 2:
+            left = node.left
+            right = left.right
+
+            node.left = right
+            right.parent = node
+            left.right = node
+            left.parent = parent
+            node.parent = left
+            
+            if parent.is_real_node(): # we need to update the parent fields
+                if node.key > parent.key:
+                    parent.right = left
+                else:
+                    parent.left = left
+            else: self.root = left # parent was None meaning the right is now the root
+
+        elif node.bf == -2:
+            right = node.right
+            left = right.left
+
+            node.right = left
+            left.parent = node
+            right.left = node
+            right.parent = parent
+            node.parent = right
+            if parent.is_real_node(): # we need to update the parent fields
+                if node.key > parent.key:
+                    parent.right = right
+                else: 
+                    parent.left = right
+            else: self.root = right # parent was None meaning the right is now the root
+        
+        self.update_height(node)
+        self.update_bf(node)
+        return True
+
+    def two_rolls(self, node, op):
+        parent = node.parent
+        if node.bf == 2:
+            left = node.left
+            right = left.right
+            if (left.bf == 1 and op == "insertion") or (left.bf >= 0 and op == "deletion"):
+                return self.one_roll(node)
+            
+            
+            node.left = right
+            right.parent = node
+            left.right = right.left
+            right.left.parent = left
+            right.left = left
+            left.parent = right
+            return self.one_roll(node)
+
+        elif node.bf == -2:
+            right = node.right
+            right = right.left
+            if (right.bf == -1 and op == "insertion") or (right.bf <= 0 and op == "deletion"):
+                return self.one_roll(node)
+            
+            
+            node.right = left
+            left.parent = node
+            right.left = left.right
+            left.right.parent = right
+            left.right = right
+            right.parent = left
+            return self.one_roll(node)
+        
+        self.update_height(node)
+        self.update_bf(node)
+        return True
+
     def rolls(self, node, op):
-        if op == "insertion":
-            if node.bf == 2:
-                pass
+        if abs(node.bf) == 2:
+                self.two_rolls(node, op)
+        return False
 
-    def update_bf(self, node):
-        while node != None:
-            node.bf = node.left.height - node.right.height
-            node = node.parent
-    
-    def update_virtual_sons(self, node):
-        node.left = self.virtual_node
-        node.right = self.virtual_node
 
     def __repr__(self): 
         print("the format of a node is x,y,z where x:key, y:height, z:bf") #added explantion of printed values
