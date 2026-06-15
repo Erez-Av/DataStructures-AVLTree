@@ -23,13 +23,22 @@ print()
 node = T.search(66)[0]
 T.delete(node)
 print(T)
+print()
+node = T.search(52)[0]
+T.delete(node)
+node = T.search(56)[0]
+T.delete(node)
+node = T.search(62)[0]
+T.delete(node)
+print(T)
+print()
+print(len(ls),T.size())
 # node = T.search(11)[0]
 # T.delete(node)
 # node = T.search(8)[0]
 # T.delete(node)
 # node = T.search(66)[0]
 # T.delete(node)
-print()
 # print(T)
 # print(T.num_children(node),T.get_childeren(node))
 # # node2 = T.search(6)[0]

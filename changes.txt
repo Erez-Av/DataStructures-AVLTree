@@ -4,7 +4,14 @@ changes.txt
 
 CHANGES:
 AVLTree.py:
+12.6.26
 - implement init and is_real_node(), and added fields successor,predecessor,bf (and are mainted for now) in AVLNode
 - implemented (not completely) the function init, search, insertion, get_height, avl_to_list, size, get_root in AVLTree
 - added fields tsize, virtual_node in AVLTree
 - added function find_succ, find_pred, update_bf, rolls (in progress) and __repr__
+
+15.6
+- finished insert and delete
+- deleted fields successor and predecessor, and function related to them
+- finished roll function
+- added comments
