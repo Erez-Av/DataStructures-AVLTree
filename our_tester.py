@@ -10,25 +10,27 @@ def printall():
         print(f"key: {node.key}, succ: {node.successor.key}, pred: {node.predecessor.key}")
 # printall()
 # T.insert(5, "5")
-T.insert(15, "15")
-T.insert(10, "10")
-T.insert(5, "20")
-T.insert(22, "20")
-T.insert(30, "30")
-T.insert(8, "6")
-T.insert(11, "3")
-T.insert(6, "3")
-# T.insert(31, "31")
-# T.insert(32, "31")
-# T.insert(33, "31")
+def build(ls):
+    for i in ls:
+        T.insert(i,i)
+
+ls = [25,19,7,22,30,16,13,50,66,56,1,10,75,59, 17, 2,52, 40,90,62, 68, 72, 14,18,11,3,9,8,73]#,100,70]
+build(ls)
 
 print(T)
 # printall()
 print()
-node = T.search(22)[0]
+node = T.search(66)[0]
 T.delete(node)
-print()
 print(T)
+# node = T.search(11)[0]
+# T.delete(node)
+# node = T.search(8)[0]
+# T.delete(node)
+# node = T.search(66)[0]
+# T.delete(node)
+print()
+# print(T)
 # print(T.num_children(node),T.get_childeren(node))
 # # node2 = T.search(6)[0]
 # printall()

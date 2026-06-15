@@ -97,26 +97,24 @@ class AVLTree(object):
     """
 
     def insert(self, key, val):
+        self.tsize += 1
         if self.root == None:
-            self.tsize += 1
             t0 = time.time()
             self.root = AVLNode(key, val)
             self.root.height = 0
             self.root.successor = self.virtual_node
             self.root.predecessor = self.virtual_node
             self.root.parent = self.virtual_node
-            self.update_virtual_sons(self.root)
+            self.create_virtual_sons(self.root)
             return self.root,time.time()-t0,-1,-1
         
         if self.search(key)[0] == None:
-            self.tsize += 1
             t0 = time.time()
             leftNode = True
             parent = None
             node = self.root
             while node.is_real_node():
                 parent = node
-                # parent.height += 1
                 if key > node.key: node = node.right  
                 else: node = node.left
             
@@ -129,8 +127,9 @@ class AVLTree(object):
                 leftNode = False
 
             resNode = parent.left if leftNode else parent.right
-            resNode.height += 1
-            self.update_virtual_sons(resNode)
+            resNode.height = 0
+            self.create_virtual_sons(resNode)
+            # print(resNode.right.height)
             self.update_height(resNode)
             self.update_bf(resNode)
             self.update_relations(resNode, "insertion")
@@ -151,6 +150,11 @@ class AVLTree(object):
     """
 
     def delete(self, node):
+        self.tsize -= 1
+        if self.tsize == 0:
+            self.root = None # root parent is virtual_node so we cant do self.root = self.root.parent
+            return
+
         parent = node.parent
         if self.num_children(node) < 2:
             child = self.get_childeren(node)[0] #if len(self.get_childeren(node)) != 0 else self.virtual_node
@@ -159,12 +163,13 @@ class AVLTree(object):
             elif node.key < parent.key: parent.left = child
             else: parent.right = child
 
-            self.update_height(child)
-            self.update_bf(child)
-            tmpNode = child
+            self.update_height(parent)
+            self.update_bf(parent)
+            tmpNode = parent
             while tmpNode.is_real_node():
-                self.rolls(node, "deletion")
+                self.rolls(tmpNode, "deletion")
                 tmpNode = tmpNode.parent
+        
         else:
             succ = node.successor
             succ_parent = succ.parent
@@ -175,7 +180,10 @@ class AVLTree(object):
             if succ_child.is_real_node(): 
                 succ_child.parent = succ_parent if succ_parent is not node else succ
             succ.left = node.left
-            succ.right = node.right if node.right is not succ else self.virtual_node
+            succ.left.parent = succ
+            # print(node.key,node.left.key,node.left.parent.key,succ.key,succ.left.key,succ.left.parent.key)
+            succ.right = node.right if node.right is not succ else succ.right
+            succ.right.parent = succ
             succ.parent = parent
             if parent is self.virtual_node: self.root = succ
             elif node.key < parent.key: parent.left = succ
@@ -183,10 +191,12 @@ class AVLTree(object):
             
             # print(node.left.key)
             # print(parent.key, parent.right.key,parent.right.left.key,node.left.key)
+            tmpNode = succ_parent if succ_parent is not node else succ
+            # print(tmpNode.key)
             self.update_relations(node, "deletion")
-            self.update_height(succ)
-            self.update_bf(succ)
-            tmpNode = succ
+            self.update_height(tmpNode)
+            self.update_bf(tmpNode)
+            # print(self.search(68)[0].key)
             while tmpNode.is_real_node():
                 self.rolls(tmpNode, "deletion")
                 tmpNode = tmpNode.parent
@@ -239,6 +249,7 @@ class AVLTree(object):
     def update_height(self, node):
         while node.is_real_node():
             node.height = max(node.left.height, node.right.height) + 1
+            # print(node.key,node.height)
             node = node.parent
     
     def update_bf(self, node):
@@ -246,7 +257,7 @@ class AVLTree(object):
             node.bf = node.left.height - node.right.height
             node = node.parent
     
-    def update_virtual_sons(self, node):
+    def create_virtual_sons(self, node):
         node.left = self.virtual_node
         node.right = self.virtual_node
     
@@ -405,14 +416,14 @@ class AVLTree(object):
 
     def rolls(self, node, op):
         if abs(node.bf) == 2:
-                self.two_rolls(node, op)
+                return self.two_rolls(node, op)
         return False
 
 
     def __repr__(self): 
         print("the format of a node is x,y,z where x:key, y:height, z:bf") #added explantion of printed values
         def printree(root):
-            if not root.is_real_node():
+            if (root == None) or (not root.is_real_node()):
                 return ["#"]
 
             node_info = str(root.key)+","+str(root.height)+","+str(root.bf) # edited
