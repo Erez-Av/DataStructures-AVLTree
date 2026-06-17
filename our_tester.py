@@ -1,7 +1,7 @@
 from AVLTree import AVLTree
 
 T = AVLTree(True)
-
+S = AVLTree(False)
 def printall():
     ls = T.avl_to_list()
     # print(ls)
@@ -10,29 +10,40 @@ def printall():
         print(f"key: {node.key}, succ: {node.successor.key}, pred: {node.predecessor.key}")
 # printall()
 # T.insert(5, "5")
-def build(ls):
+def build(tree,ls):
     for i in ls:
-        T.insert(i,i)
+        tree.insert(i,i)
 
 ls = [25,19,7,22,30,16,13,50,66,56,1,10,75,59, 17, 2,52, 40,90,62, 68, 72, 14,18,11,3,9,8,73]#,100,70]
-build(ls)
+build(T,ls)
 
 print(T)
+x = T.insert(63,51)
 # printall()
 print()
-node = T.search(66)[0]
-T.delete(node)
+# # # printall()
+# print()
+# print(T)
+z=T.insert(510,51)
+# node = T.search(56)[0]
+# print(node.height)
+# print()
 print(T)
-print()
-node = T.search(52)[0]
-T.delete(node)
-node = T.search(56)[0]
-T.delete(node)
-node = T.search(62)[0]
-T.delete(node)
-print(T)
-print()
-print(len(ls),T.size())
+print(z[0].key, z[1:])
+# node = T.search(52)[0]
+# T.delete(node)
+# node = T.search(56)[0]
+# T.delete(node)
+# node = T.search(62)[0]
+# T.delete(node)
+# print(T)
+# print()
+# print(len(ls),T.size())
+
+# n = 20
+# print(ls[:n])
+# build(S, ls[:n])
+# print(S)
 # node = T.search(11)[0]
 # T.delete(node)
 # node = T.search(8)[0]

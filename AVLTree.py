@@ -93,16 +93,17 @@ class AVLTree(object):
         self.tsize += 1
         if self.root == None:
             self.root = AVLNode(key, val)
-            self.root.height = 0
             self.root.parent = self.virtual_node
             self.create_virtual_sons(self.root)
+            self.update_node(self.root)
             return self.root, 1, 0, 0
         
 
         parent = None
         node = self.root
-        tmpNode = AVLNode(key, val)
-        tmpNode.height = 0
+        resNode = AVLNode(key, val)
+        self.create_virtual_sons(resNode)
+        self.update_node(resNode)
         search_time = 0 # Initialize seach_time
         while node.is_real_node():
             search_time += 1
@@ -111,25 +112,25 @@ class AVLTree(object):
             else: node = node.left
         
         if key < parent.key:
-            parent.left = tmpNode
-            tmpNode.parent = parent
+            parent.left = resNode
+            resNode.parent = parent
         else:
-            parent.right = tmpNode
-            tmpNode.parent = parent
+            parent.right = resNode
+            resNode.parent = parent
 
-        self.create_virtual_sons(tmpNode)
-        made_rolls = False
         roll_count = 0
         height_changes = 0
-        while tmpNode.is_real_node() and not made_rolls:
+        tmpNode = resNode.parent # we get height_changes only from resNode.parent and up the tree
+        while tmpNode.is_real_node() and roll_count == 0:
+            tmp_height = tmpNode.height
+            self.update_node(tmpNode)
+            if tmp_height == tmpNode.height and tmpNode.height != 0: break # there was no change in height in tmpNode so there wont be changes upwards as well
             height_changes += 1
-            self.update_height(tmpNode)
-            self.update_bf(tmpNode)
             if self.is_avl: 
-                made_rolls, roll_count, height_changes = self.rolls(tmpNode, "insertion", roll_count, height_changes) # if a roll is made then made_rolls = True
+                roll_count = self.rolls(tmpNode, "insertion", roll_count) # if a roll is made then made_rolls = True
             tmpNode = tmpNode.parent
-        
-        return tmpNode, search_time+1, roll_count, height_changes
+        if roll_count != 0: height_changes -= 1 # if we made a roll then the roll replaces the height change
+        return resNode, search_time+1, roll_count, height_changes
 
 
     """deletes node from the dictionary
@@ -150,14 +151,9 @@ class AVLTree(object):
             if parent is self.virtual_node: self.root = child
             elif node.key < parent.key: parent.left = child
             else: parent.right = child
-
+            
             tmpNode = parent
-            # while tmpNode.is_real_node():
-            #     self.update_height(tmpNode)
-            #     self.update_bf(tmpNode)
-            #     self.rolls(tmpNode, "deletion",0,0)
-            #     tmpNode = tmpNode.parent
-        
+
         else:
             succ = self.find_succ(node)
             succ_parent = succ.parent
@@ -173,14 +169,13 @@ class AVLTree(object):
             succ.parent = parent
             if parent is self.virtual_node: self.root = succ
             elif node.key < parent.key: parent.left = succ
-            else: parent.right = succ
+            else: parent.right = succ   
             
             tmpNode = succ_parent if succ_parent is not node else succ
         
         while tmpNode.is_real_node():
-            self.update_height(tmpNode)
-            self.update_bf(tmpNode)
-            if self.is_avl: self.rolls(tmpNode, "deletion",0,0)
+            self.update_node(tmpNode)
+            if self.is_avl: self.rolls(tmpNode, "deletion",0)
             tmpNode = tmpNode.parent
 
             
@@ -227,11 +222,9 @@ class AVLTree(object):
 
     def get_height(self):
         return self.root.height if self.root != None else -1 # if the tree is empty, the function will return -1
-
-    def update_height(self, node):
-        node.height = max(node.left.height, node.right.height) + 1
     
-    def update_bf(self, node):
+    def update_node(self, node):
+        node.height = max(node.left.height, node.right.height) + 1
         node.bf = node.left.height - node.right.height
     
     def create_virtual_sons(self, node):
@@ -274,7 +267,7 @@ class AVLTree(object):
             return successor if parent.is_real_node() else self.virtual_node
     
 
-    def one_roll(self, node, roll_count, height_changes): # the "easy" roll where its big->mid->small or opposite
+    def one_roll(self, node, roll_count): # the "easy" roll where its big->mid->small or opposite
         parent = node.parent
         if node.bf == 2:
             left = node.left
@@ -292,6 +285,8 @@ class AVLTree(object):
                 else:
                     parent.left = left
             else: self.root = left # parent was None meaning the right is now the root
+            self.update_node(node)
+            self.update_node(left)
 
         elif node.bf == -2:
             right = node.right
@@ -308,17 +303,16 @@ class AVLTree(object):
                 else: 
                     parent.left = right
             else: self.root = right # parent was None meaning the right is now the root
-        
-        self.update_height(node)
-        self.update_bf(node)
-        return True, roll_count+1, height_changes+1
+            self.update_node(node)
+            self.update_node(right)
+        return roll_count+1
 
-    def two_rolls(self, node, op, roll_count, height_changes):
+    def two_rolls(self, node, op, roll_count):
         if node.bf == 2:
             left = node.left
             right = left.right
             if (left.bf == 1 and op == "insertion") or (left.bf >= 0 and op == "deletion"):
-                return self.one_roll(node, roll_count, height_changes+1)
+                return self.one_roll(node, roll_count)
             
             
             node.left = right
@@ -327,15 +321,14 @@ class AVLTree(object):
             right.left.parent = left
             right.left = left
             left.parent = right
-            self.update_height(left)
-            self.update_bf(left)
-            return self.one_roll(node, roll_count+1, height_changes)
+            self.update_node(left)
+            return self.one_roll(node, roll_count+1)
 
         elif node.bf == -2:
             right = node.right
             left = right.left
             if (right.bf == -1 and op == "insertion") or (right.bf <= 0 and op == "deletion"):
-                return self.one_roll(node, roll_count, height_changes+1)
+                return self.one_roll(node, roll_count)
             
             
             node.right = left
@@ -344,15 +337,14 @@ class AVLTree(object):
             left.right.parent = right
             left.right = right
             right.parent = left
-            self.update_height(right)
-            self.update_bf(right)
-            return self.one_roll(node, roll_count+1, height_changes)
+            self.update_node(right)
+            return self.one_roll(node, roll_count+1)
 
 
-    def rolls(self, node, op, roll_count, height_changes):
+    def rolls(self, node, op, roll_count):
         if abs(node.bf) == 2:
-                return self.two_rolls(node, op, roll_count, height_changes)
-        return False, roll_count, height_changes
+                return self.two_rolls(node, op, roll_count)
+        return roll_count
 
 
     def __repr__(self): 
