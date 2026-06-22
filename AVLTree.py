@@ -125,8 +125,8 @@ class AVLTree(object):
             tmp_height = tmpNode.height
             self.update_node(tmpNode)
             if tmp_height == tmpNode.height and tmpNode.height != 0: break # there was no change in height in tmpNode so there wont be changes upwards as well
-            height_changes += 1
             if self.is_avl: 
+                height_changes += 1
                 roll_count = self.rolls(tmpNode, "insertion", roll_count) # if a roll is made then made_rolls = True
             tmpNode = tmpNode.parent
         if roll_count != 0: height_changes -= 1 # if we made a roll then the roll replaces the height change
