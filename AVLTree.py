@@ -275,7 +275,7 @@ class AVLTree(object):
             right = left.right
 
             node.left = right
-            right.parent = node
+            if right.is_real_node(): right.parent = node
             left.right = node
             left.parent = parent
             node.parent = left
@@ -294,7 +294,7 @@ class AVLTree(object):
             left = right.left
 
             node.right = left
-            left.parent = node
+            if left.is_real_node(): left.parent = node
             right.left = node
             right.parent = parent
             node.parent = right
@@ -319,7 +319,7 @@ class AVLTree(object):
             node.left = right
             right.parent = node
             left.right = right.left
-            right.left.parent = left
+            if right.left.is_real_node(): right.left.parent = left
             right.left = left
             left.parent = right
             self.update_node(left)
@@ -335,7 +335,7 @@ class AVLTree(object):
             node.right = left
             left.parent = node
             right.left = left.right
-            left.right.parent = right
+            if left.right.is_real_node(): left.right.parent = right
             left.right = right
             right.parent = left
             self.update_node(right)
