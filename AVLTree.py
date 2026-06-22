@@ -147,25 +147,26 @@ class AVLTree(object):
 
         parent = node.parent
         if self.num_children(node) < 2:
-            child = self.get_childeren(node)[0] # if len(self.get_childeren(node)) != 0 else self.virtual_node
+            child = self.get_children(node)[0] # if len(self.get_childeren(node)) != 0 else self.virtual_node
             if parent is self.virtual_node: self.root = child
             elif node.key < parent.key: parent.left = child
             else: parent.right = child
+            if child.is_real_node(): child.parent = parent
             
             tmpNode = parent
 
         else:
             succ = self.find_succ(node)
             succ_parent = succ.parent
-            succ_child = self.get_childeren(succ)[0]
+            succ_child = self.get_children(succ)[0]
             
             if succ_parent is not node: succ_parent.left = succ_child # if succ_parent is node then succ was node.right
             if succ_child.is_real_node(): 
                 succ_child.parent = succ_parent if succ_parent is not node else succ # if succ_parent is node then succ_child.parent shouldn't change
             succ.left = node.left
-            succ.left.parent = succ
+            if succ.left.is_real_node(): succ.left.parent = succ
             succ.right = node.right if node.right is not succ else succ.right # if node.right is succ then succ shifted up and succ.right stayed the same
-            succ.right.parent = succ
+            if succ.right.is_real_node(): succ.right.parent = succ
             succ.parent = parent
             if parent is self.virtual_node: self.root = succ
             elif node.key < parent.key: parent.left = succ
@@ -231,7 +232,7 @@ class AVLTree(object):
         node.left = self.virtual_node
         node.right = self.virtual_node
     
-    def get_childeren(self, node):
+    def get_children(self, node):
         ls = []
         if node.left.is_real_node(): ls.append(node.left)
         if node.right.is_real_node(): ls.append(node.right)
@@ -239,7 +240,7 @@ class AVLTree(object):
         return ls
     
     def num_children(self, node):
-        res = self.get_childeren(node)
+        res = self.get_children(node)
         return len(res) if res[0] is not self.virtual_node else 0
     
     """returns the successor of a node
