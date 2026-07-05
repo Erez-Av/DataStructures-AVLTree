@@ -20,3 +20,9 @@ AVLTree.py:
 - insert now returns correct values (need more checks)
 - fixed bug in rolls when updating nodes height and bf, and removed unnecessary arguments and return values
 - replaced updae_height and update_bf with update_node (does both so no need for 2 functions)
+
+05.07.26
+- made changes to code to make it more readable and "correct", and added some comments
+- deleted unnecessary functions create_virtual_childs and get_num_children
+- edited roll function to not take roll_count as parameter as it is unnecessary
+- added a condition to "avl_to_list" to handle the case where tree is empty as it wouldnt work on an empty tree

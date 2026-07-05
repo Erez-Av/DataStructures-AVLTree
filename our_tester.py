@@ -1,4 +1,5 @@
 from AVLTree import AVLTree
+import time
 
 T = AVLTree(True)
 S = AVLTree(False)
@@ -30,6 +31,8 @@ z=T.insert(510,51)
 # print()
 print(T)
 print(z[0].key, z[1:])
+print(T.avl_to_list())
+print(T.avl_to_list2())
 # node = T.search(52)[0]
 # T.delete(node)
 # node = T.search(56)[0]
@@ -60,3 +63,23 @@ print(z[0].key, z[1:])
 # print(T.root.left is T.root.right)
 # print(T.root.left.key, T.root.right.right.parent.key )
 
+S = AVLTree(True)
+n = 10000000
+for i in range(n):
+    S.insert(i,i)
+t0 = time.time()
+a = S.avl_to_list()
+t1 = time.time()
+
+t3 = time.time()
+b = S.avl_to_list2()
+t4 = time.time()
+
+print(t1-t0,t4-t3)
+# print(S.root)
+# S.insert(1,1)
+# print(S.root.left.key,S.root.right.key)
+# S.insert(2,2)
+# node = S.search(2)[0]
+# print(node.left.key,node.right.key)
+# print(S.root.left.key,S.root.right.key)
