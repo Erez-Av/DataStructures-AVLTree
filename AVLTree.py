@@ -146,7 +146,7 @@ class AVLTree(object):
 
         parent = node.parent
         if len(self.get_children(node)) < 2:
-            child = self.get_children(node)[0] # if len(self.get_childeren(node)) != 0 else self.virtual_node
+            child = self.get_children(node)[0] # returns child if len(self.get_childeren(node)) == 1 else self.virtual_node
             if parent is self.virtual_node: self.root = child
             elif node.key < parent.key: parent.left = child
             else: parent.right = child
@@ -188,12 +188,12 @@ class AVLTree(object):
 
     def avl_to_list(self):
         if self.tsize == 0: return []
-        def rec_avl_to_list(node, ls):
+        def rec_avl_to_list(node, ls): # in-order traversal on the tree
             if not node.is_real_node():
                 return []
             rec_avl_to_list(node.left, ls)
-            ls.append((node.key, node.value)) # Adds the node into the list
-            rec_avl_to_list(node.right, ls) # Continues to the right tree
+            ls.append((node.key, node.value))
+            rec_avl_to_list(node.right, ls)
             return ls
         return rec_avl_to_list(self.root, [])
 
