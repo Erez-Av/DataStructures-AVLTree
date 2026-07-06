@@ -24,22 +24,21 @@ x = T.insert(63,51)
 print()
 # # # printall()
 # print()
-# print(T)
+print(T)
 z=T.insert(510,51)
-# node = T.search(56)[0]
+node = T.search(56)[0]
 # print(node.height)
 # print()
-print(T)
-print(z[0].key, z[1:])
-print(T.avl_to_list())
-print(T.avl_to_list2())
-# node = T.search(52)[0]
-# T.delete(node)
-# node = T.search(56)[0]
-# T.delete(node)
-# node = T.search(62)[0]
-# T.delete(node)
 # print(T)
+# print(z[0].key, z[1:])
+# print(T.avl_to_list())
+node = T.search(56)[0]
+T.delete(node)
+node = T.search(52)[0]
+T.delete(node)
+node = T.search(62)[0]
+T.delete(node)
+print(T)
 # print()
 # print(len(ls),T.size())
 
@@ -63,21 +62,25 @@ print(T.avl_to_list2())
 # print(T.root.left is T.root.right)
 # print(T.root.left.key, T.root.right.right.parent.key )
 
-S = AVLTree(True)
-n = 10000000
+S = AVLTree(False)
+n = 10
 for i in range(n):
     S.insert(i,i)
-t0 = time.time()
-a = S.avl_to_list()
-t1 = time.time()
+# t0 = time.time()
+# a = S.avl_to_list()
+# t1 = time.time()
 
-t3 = time.time()
-b = S.avl_to_list2()
-t4 = time.time()
-
-print(t1-t0,t4-t3)
+# print(t1-t0)
 # print(S.root)
-# S.insert(1,1)
+print("\n\n")
+x=S.insert(n+1,n+1)
+S.insert(-1,-1)
+print(x)
+print(S)
+print(S.get_height())
+S.delete(x[0])
+print(S)
+print(S.get_height())
 # print(S.root.left.key,S.root.right.key)
 # S.insert(2,2)
 # node = S.search(2)[0]

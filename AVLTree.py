@@ -119,15 +119,15 @@ class AVLTree(object):
 
         roll_count = 0
         height_changes = 0
-        tmpNode = resNode.parent # we get height_changes only from resNode.parent and up the tree
-        while tmpNode.is_real_node() and roll_count == 0:
-            tmp_height = tmpNode.height
-            self.update_node(tmpNode)
-            if tmp_height == tmpNode.height and tmpNode.height != 0: break # there was no change in height in tmpNode so there wont be changes upwards as well
-            if self.is_avl: 
+        if self.is_avl:
+            tmpNode = resNode.parent # we get height_changes only from resNode.parent and up the tree
+            while tmpNode.is_real_node() and roll_count == 0:
+                tmp_height = tmpNode.height
+                self.update_node(tmpNode)
+                if tmp_height == tmpNode.height and tmpNode.height != 0: break # there was no change in height in tmpNode so there wont be changes upwards as well
                 height_changes += 1
                 roll_count = self.rolls(tmpNode, "insertion") # if a roll is made then made_rolls = True
-            tmpNode = tmpNode.parent
+                tmpNode = tmpNode.parent
         if roll_count != 0: height_changes -= 1 # if we made a roll then the roll replaces the height change
         return resNode, search_time+1, roll_count, height_changes
 
@@ -173,10 +173,11 @@ class AVLTree(object):
             
             tmpNode = succ_parent if succ_parent is not node else succ
         
-        while tmpNode.is_real_node():
-            self.update_node(tmpNode)
-            if self.is_avl: self.rolls(tmpNode, "deletion")
-            tmpNode = tmpNode.parent
+        if self.is_avl: 
+            while tmpNode.is_real_node():
+                self.update_node(tmpNode)
+                self.rolls(tmpNode, "deletion")
+                tmpNode = tmpNode.parent
 
             
 
@@ -222,8 +223,29 @@ class AVLTree(object):
         """
 
     def get_height(self):
-        return self.root.height if self.root != None else -1 # if the tree is empty, the function will return -1
+        if self.root == None: return -1 # if the tree is empty, the function will return -1
+        elif self.is_avl: return self.root.height # tree is avl so we just get the height from the field
+        return self.tree_height() # tree is regular binary tree
     
+    def tree_height(self):
+        root = self.root
+        if root == None or not root.is_real_node(): # checks if tree is empty, not needed becuase we check in wrapper function
+            return -1
+
+        stack = [(root, 0)]
+        max_height = 0
+
+        while stack:
+            node, depth = stack.pop()
+            max_height = max(max_height, depth) # max_height == max_depth
+
+            if node.left.is_real_node():
+                stack.append((node.left, depth + 1)) # adds left child and its depth
+            if node.right.is_real_node():
+                stack.append((node.right, depth + 1)) # adds right child and its depth
+
+        return max_height
+
     def update_node(self, node):
         node.height = max(node.left.height, node.right.height) + 1
         node.bf = node.left.height - node.right.height
