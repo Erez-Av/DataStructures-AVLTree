@@ -1,5 +1,6 @@
 from AVLTree import AVLTree
 import time
+import random
 
 T = AVLTree(True)
 S = AVLTree(False)
@@ -18,13 +19,13 @@ def build(tree,ls):
 ls = [25,19,7,22,30,16,13,50,66,56,1,10,75,59, 17, 2,52, 40,90,62, 68, 72, 14,18,11,3,9,8,73]#,100,70]
 build(T,ls)
 
-print(T)
+# print(T)
 x = T.insert(63,51)
 # printall()
-print()
+# print()
 # # # printall()
 # print()
-print(T)
+# print(T)
 z=T.insert(510,51)
 node = T.search(56)[0]
 # print(node.height)
@@ -32,13 +33,13 @@ node = T.search(56)[0]
 # print(T)
 # print(z[0].key, z[1:])
 # print(T.avl_to_list())
-node = T.search(56)[0]
-T.delete(node)
-node = T.search(52)[0]
-T.delete(node)
-node = T.search(62)[0]
-T.delete(node)
-print(T)
+# node = T.search(56)[0]
+# T.delete(node)
+# node = T.search(52)[0]
+# T.delete(node)
+# node = T.search(62)[0]
+# T.delete(node)
+# print(T)
 # print()
 # print(len(ls),T.size())
 
@@ -63,26 +64,49 @@ print(T)
 # print(T.root.left.key, T.root.right.right.parent.key )
 
 S = AVLTree(False)
-n = 10
-for i in range(n):
-    S.insert(i,i)
-# t0 = time.time()
-# a = S.avl_to_list()
-# t1 = time.time()
+V = AVLTree(True)
 
-# print(t1-t0)
-# print(S.root)
-print("\n\n")
-x=S.insert(n+1,n+1)
-S.insert(-1,-1)
-print(x)
-print(S)
-print(S.get_height())
-S.delete(x[0])
-print(S)
-print(S.get_height())
-# print(S.root.left.key,S.root.right.key)
-# S.insert(2,2)
-# node = S.search(2)[0]
-# print(node.left.key,node.right.key)
-# print(S.root.left.key,S.root.right.key)
+n = 32#100000000
+# for i in range(n):
+#     V.insert(i,i)
+
+# print("finished inserting")
+# t1 = time.time()
+# V.inorder_iter()
+# t2 = time.time()
+# print(f"iter: {t2-t1}")
+
+# t3 = time.time()
+# V.avl_to_list()
+# t4 = time.time()
+# print(f"rec: {t4-t3}")
+
+numbers = [i for i in range(1,n+1)]
+random.shuffle(numbers)
+for i in range(n):
+    S.insert(numbers[i],numbers[i])
+    V.insert(numbers[i],numbers[i])
+
+
+print(V)
+print(f"tree height: {V.get_height()}\n\n")
+# print(S)
+# print(f"tree height: {S.get_height()}\n\n")
+
+
+t = 10
+for i in range(t):
+    x = numbers.pop(random.randrange(len(numbers)))
+    node = V.search(x)[0]
+    # print(x)
+    # S.delete(node)
+    V.delete(node)
+    # print(f"deleted node: {x}")
+    # print(V)
+print(V)
+print(f"tree height: {V.get_height()}\n\n")
+# print(S)
+# print(f"tree height: {S.get_height()}\n\n")
+
+
+

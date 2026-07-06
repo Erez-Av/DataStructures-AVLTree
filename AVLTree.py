@@ -189,14 +189,36 @@ class AVLTree(object):
 
     def avl_to_list(self):
         if self.tsize == 0: return []
-        def rec_avl_to_list(node, ls): # in-order traversal on the tree
-            if not node.is_real_node():
-                return []
-            rec_avl_to_list(node.left, ls)
-            ls.append((node.key, node.value))
-            rec_avl_to_list(node.right, ls)
-            return ls
-        return rec_avl_to_list(self.root, [])
+        # after some testing rec is faster and so we use it for avl with height less than 100 since there is a recursion limit
+        # the defualt limit is 1000 but to be careful and to not import any libraries we will use 100 instead of 1000
+        if self.is_avl and self.root.height < 100: return self.inorder_rec(self.root, [])
+        # we cant use inorder_rec on regular binary tree since height can be greater than 1000 so we use inorder_iter
+        return self.inorder_iter()
+
+    def inorder_rec(self, node, ls):
+        if not node.is_real_node():
+            return []
+        self.inorder_rec(node.left, ls)
+        ls.append((node.key, node.value))
+        self.inorder_rec(node.right, ls)
+        return ls
+    
+    def inorder_iter(self):
+        result = []
+        stack = []
+        current = self.root
+
+        while stack or current.is_real_node():
+            while current.is_real_node():
+                stack.append(current)
+                current = current.left
+
+            current = stack.pop()
+            result.append((current.key, current.value))
+            current = current.right
+        
+        return result
+
 
     """returns the number of items in dictionary 
 
@@ -223,8 +245,8 @@ class AVLTree(object):
         """
 
     def get_height(self):
-        if self.root == None: return -1 # if the tree is empty, the function will return -1
-        elif self.is_avl: return self.root.height # tree is avl so we just get the height from the field
+        if self.tsize == 0: return -1 # if the tree is empty, the function will return -1
+        if self.is_avl: return self.root.height # tree is avl so we just get the height from the field
         return self.tree_height() # tree is regular binary tree
     
     def tree_height(self):
