@@ -176,7 +176,7 @@ def exp_5(n):
 
 #----------------------------------------
 
-
+"""
 
 def run_all_exp_1():
     n_values = []
@@ -201,6 +201,9 @@ def run_all_exp_1():
     plt.ylabel("Runtime (ms)")
     plt.grid(True)
     plt.show()
+
+if __name__ == "__main__":
+    run_all_exp_1()
 
 
 def run_all_exp_2():
@@ -227,7 +230,8 @@ def run_all_exp_2():
     plt.grid(True)
     plt.show()
 
-
+if __name__ == "__main__":
+    run_all_exp_2()
 
 def run_all_exp_3():
     n_values = []
@@ -253,6 +257,8 @@ def run_all_exp_3():
     plt.grid(True)
     plt.show()
 
+if __name__ == "__main__":
+    run_all_exp_3()
 
 
 
