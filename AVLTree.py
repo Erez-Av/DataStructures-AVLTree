@@ -383,7 +383,7 @@ class AVLTree(object):
                 return self.two_rolls(node, op)
         return 0
 
-
+"""
     def __repr__(self): 
         print("the format of a node is x,y,z where x:key, y:height, z:bf") #added explantion of printed values
         def printree(root):
@@ -422,3 +422,4 @@ class AVLTree(object):
             return result
 
         return '\n'.join(printree(self.root))
+"""
